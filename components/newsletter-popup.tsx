@@ -1,23 +1,33 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { NEWSLETTER_DISMISSED_KEY } from "@/lib/constants";
 
 export function NewsletterPopup() {
     const [isVisible, setIsVisible] = useState(false);
-    const [isDismissed, setIsDismissed] = useState(false);
 
     useEffect(() => {
-        if (isDismissed) return;
+        const alreadyDismissed = localStorage.getItem(NEWSLETTER_DISMISSED_KEY);
+        if (alreadyDismissed) return;
 
-        // Show popup after 3 seconds
         const timer = setTimeout(() => {
             setIsVisible(true);
         }, 2500);
 
         return () => clearTimeout(timer);
-    }, [isDismissed]);
+    }, []);
 
-    if (!isVisible || isDismissed) return null;
+    const handleDismiss = () => {
+        setIsVisible(false);
+        localStorage.setItem(NEWSLETTER_DISMISSED_KEY, "1");
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        handleDismiss();
+    };
+
+    if (!isVisible) return null;
 
     return (
         <div className="fixed bottom-6 right-6 z-50 w-[340px] animate-in slide-in-from-bottom-8 fade-in duration-700">
@@ -26,7 +36,7 @@ export function NewsletterPopup() {
                 <div className="absolute top-0 h-1 w-full bg-gradient-to-r from-primary to-primary-dark" />
 
                 <button
-                    onClick={() => setIsDismissed(true)}
+                    onClick={handleDismiss}
                     className="absolute right-3 top-3 rounded-full p-1.5 text-muted hover:bg-canvas hover:text-text transition-colors"
                     aria-label="Close"
                 >
@@ -46,14 +56,7 @@ export function NewsletterPopup() {
                         <p className="mt-2 text-sm leading-relaxed text-muted">Subscribe to be the first to know about new drops and exclusive offers.</p>
                     </div>
 
-                    <form
-                        className="space-y-3"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            // In production, this would fire an API call. 
-                            setIsDismissed(true);
-                        }}
-                    >
+                    <form className="space-y-3" onSubmit={handleSubmit}>
                         <div>
                             <input
                                 type="email"

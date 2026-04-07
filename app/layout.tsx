@@ -18,7 +18,7 @@ const displayFont = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(`https://${site.domain}`),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? `https://${site.domain}`),
   title: {
     default: "Starway Diecast | Premium diecast collectibles demo storefront",
     template: "%s | Starway Diecast",

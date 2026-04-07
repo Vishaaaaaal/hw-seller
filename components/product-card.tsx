@@ -6,6 +6,7 @@ import { PlaceholderImage } from "@/components/placeholder-image";
 import { HeartIcon, SearchIcon } from "@/components/icons";
 import { useStore } from "@/lib/store";
 import { cn, formatPrice } from "@/lib/utils";
+import { CART_MAX_QTY } from "@/lib/constants";
 import type { Product } from "@/lib/types";
 
 function StatusPill({ product }: { product: Product }) {
@@ -23,14 +24,16 @@ function StatusPill({ product }: { product: Product }) {
 
 export function ProductCard({
   product,
+  onQuickView,
 }: {
   product: Product;
+  onQuickView?: (product: Product) => void;
 }) {
   const { cart, addToCart, toggleWishlist, isWishlisted } = useStore();
   const [added, setAdded] = useState(false);
 
   const existingItem = cart.find(i => i.productId === product.id);
-  const reachedLimit = existingItem ? existingItem.quantity >= 2 : false;
+  const reachedLimit = existingItem ? existingItem.quantity >= CART_MAX_QTY : false;
 
   const handleAdd = () => {
     if (reachedLimit) return;
@@ -62,6 +65,16 @@ export function ProductCard({
         >
           <HeartIcon className={cn(wishlisted ? "fill-current" : "")} />
         </button>
+        {onQuickView && (
+          <button
+            aria-label="Quick view"
+            className="ring-focus absolute left-6 top-6 inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/70 bg-white/85 shadow-soft text-text opacity-0 transition-opacity group-hover:opacity-100"
+            onClick={() => onQuickView(product)}
+            type="button"
+          >
+            <SearchIcon />
+          </button>
+        )}
       </div>
       <div className="space-y-4 px-5 pb-5">
         <div className="flex items-start justify-between gap-3">
@@ -85,7 +98,7 @@ export function ProductCard({
               <p className="text-sm text-muted line-through">{formatPrice(product.originalPrice)}</p>
             ) : null}
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-col items-end gap-1">
             <button
               className={cn(
                 "ring-focus rounded-2xl px-6 py-3 text-sm font-semibold text-white transition-all",
@@ -94,9 +107,15 @@ export function ProductCard({
               disabled={product.stockStatus === "Sold Out" || reachedLimit}
               onClick={handleAdd}
               type="button"
+              title={reachedLimit ? `Max ${CART_MAX_QTY} per customer` : undefined}
             >
-              {product.stockStatus === "Sold Out" ? "Sold Out" : reachedLimit ? "Limit Reached" : added ? "Added" : "Add to Cart"}
+              {product.stockStatus === "Sold Out" ? "Sold Out" : reachedLimit ? "Limit Reached" : added ? "Added ✓" : "Add to Cart"}
             </button>
+            {added && (
+              <Link href="/cart" className="text-xs font-medium text-primary hover:underline">
+                View Cart →
+              </Link>
+            )}
           </div>
         </div>
       </div>

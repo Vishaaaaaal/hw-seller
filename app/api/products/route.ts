@@ -19,10 +19,8 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing fields" }, { status: 400 });
         }
 
-        // Storing locally in whole units since INR formatPrice scales natively
-        let listPrice = isNaN(priceRaw) ? 0 : priceRaw;
-
-        let slug = title.toLowerCase().replace(/[\s\W-]+/g, "-");
+        const listPrice = isNaN(priceRaw) ? 0 : priceRaw;
+        const slug = title.toLowerCase().replace(/[\s\W-]+/g, "-");
 
         // Write image if provided
         if (imageFile && imageFile.name) {
@@ -31,7 +29,18 @@ export async function POST(req: Request) {
             const ext = path.extname(imageFile.name) || ".jpg";
             const fileName = `${slug}${ext}`;
             const filePath = path.join(process.cwd(), "public", "images", "products", fileName);
-            await fs.writeFile(filePath, buffer);
+            try {
+                await fs.writeFile(filePath, buffer);
+            } catch (err: unknown) {
+                const code = (err as NodeJS.ErrnoException).code;
+                if (code === "EROFS" || code === "ENOENT") {
+                    return NextResponse.json(
+                        { error: "Image uploads are not supported in this deployment environment. Use a local dev server to add listings." },
+                        { status: 501 }
+                    );
+                }
+                throw err;
+            }
         }
 
         // Append to JSON
@@ -55,14 +64,25 @@ export async function POST(req: Request) {
             newArrival: true,
             popularity: 100,
             packagingType: "Standard Custom",
-            color: "standard"
+            color: "standard",
         };
 
         const currentData = [...productsData];
-        currentData.unshift(newProduct); // Add to top so user sees it instantly
+        currentData.unshift(newProduct);
 
         const dataPath = path.join(process.cwd(), "lib", "data", "products.json");
-        await fs.writeFile(dataPath, JSON.stringify(currentData, null, 2));
+        try {
+            await fs.writeFile(dataPath, JSON.stringify(currentData, null, 2));
+        } catch (err: unknown) {
+            const code = (err as NodeJS.ErrnoException).code;
+            if (code === "EROFS" || code === "ENOENT") {
+                return NextResponse.json(
+                    { error: "Product data cannot be persisted in this deployment environment. Use a local dev server to add listings." },
+                    { status: 501 }
+                );
+            }
+            throw err;
+        }
 
         return NextResponse.json({ success: true, slug });
     } catch (err) {

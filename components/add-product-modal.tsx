@@ -26,7 +26,8 @@ export function AddProductModal({ isOpen, onClose }: { isOpen: boolean; onClose:
                 onClose();
                 router.refresh();
             } else {
-                alert("Failed to publish the listing. Check console.");
+                const body = await res.json().catch(() => ({}));
+                alert(body.error ?? "Failed to publish the listing.");
             }
         } catch (err) {
             alert(err);

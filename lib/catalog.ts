@@ -58,6 +58,7 @@ export const defaultFilters: CatalogFilters = {
   years: [],
   importedOnly: false,
   cardedOnly: false,
+  hideSoldOut: false,
 };
 
 export function parseFilters(searchParams: URLSearchParams): CatalogFilters {
@@ -76,6 +77,7 @@ export function parseFilters(searchParams: URLSearchParams): CatalogFilters {
     maxPrice: Number.isFinite(maxPrice) ? maxPrice : priceBounds.max,
     importedOnly: searchParams.get("imported") === "1",
     cardedOnly: searchParams.get("carded") === "1",
+    hideSoldOut: searchParams.get("hideSoldOut") === "1",
   };
 }
 
@@ -102,6 +104,7 @@ export function filterProducts(items: Product[], filters: CatalogFilters) {
     const matchesYears = filters.years.length === 0 || filters.years.includes(String(product.releaseYear));
     const matchesImported = !filters.importedOnly || product.imported;
     const matchesCarded = !filters.cardedOnly || product.carded;
+    const matchesHideSoldOut = !filters.hideSoldOut || product.stockStatus !== "Sold Out";
 
     return (
       matchesSearch &&
@@ -113,7 +116,8 @@ export function filterProducts(items: Product[], filters: CatalogFilters) {
       matchesPrice &&
       matchesYears &&
       matchesImported &&
-      matchesCarded
+      matchesCarded &&
+      matchesHideSoldOut
     );
   });
 }

@@ -227,6 +227,7 @@ function FiltersPanel({
         ))}
       </FilterBlock>
       <FilterBlock title="Collector toggles">
+        <Toggle checked={filters.hideSoldOut} label="Hide Sold Out" onChange={() => toggleBoolean("hideSoldOut")} />
         <Toggle checked={filters.importedOnly} label="Imported only" onChange={() => toggleBoolean("imported")} />
         <Toggle checked={filters.cardedOnly} label="Carded only" onChange={() => toggleBoolean("carded")} />
       </FilterBlock>
@@ -269,6 +270,7 @@ export function ShopExperience() {
     ...filters.availability.map((item) => ({ key: "availability", value: item, label: item })),
     ...filters.vehicleTypes.map((item) => ({ key: "vehicle", value: item, label: item })),
     ...filters.years.map((item) => ({ key: "year", value: item, label: item })),
+    ...(filters.hideSoldOut ? [{ key: "hideSoldOut", value: "1", label: "Hide Sold Out" }] : []),
     ...(filters.importedOnly ? [{ key: "imported", value: "1", label: "Imported only" }] : []),
     ...(filters.cardedOnly ? [{ key: "carded", value: "1", label: "Carded only" }] : []),
     ...(filters.search ? [{ key: "q", value: filters.search, label: `Search: ${filters.search}` }] : []),
@@ -366,7 +368,7 @@ export function ShopExperience() {
                       key={`${chip.key}-${chip.value}`}
                       onClick={() =>
                         updateParams((next) => {
-                          if (chip.key === "imported" || chip.key === "carded" || chip.key === "q") {
+                          if (chip.key === "imported" || chip.key === "carded" || chip.key === "hideSoldOut" || chip.key === "q") {
                             next.delete(chip.key);
                             return;
                           }

@@ -80,4 +80,5 @@ export interface CatalogFilters {
   years: string[];
   importedOnly: boolean;
   cardedOnly: boolean;
+  hideSoldOut: boolean;
 }

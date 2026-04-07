@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { products } from "@/lib/data/products";
+import { CART_MAX_QTY } from "@/lib/constants";
 
 type CartItem = { productId: string; quantity: number };
 
@@ -56,10 +57,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setCart((current) => {
         const existing = current.find((item) => item.productId === productId);
         if (!existing) {
-          return [...current, { productId, quantity: Math.min(quantity, 2) }];
+          return [...current, { productId, quantity: Math.min(quantity, CART_MAX_QTY) }];
         }
 
-        const newQuantity = Math.min(existing.quantity + quantity, 2);
+        const newQuantity = Math.min(existing.quantity + quantity, CART_MAX_QTY);
         return current.map((item) =>
           item.productId === productId ? { ...item, quantity: newQuantity } : item,
         );
